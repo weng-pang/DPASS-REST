@@ -49,6 +49,7 @@ class Record extends Model{
 			$statement->bindParam('entryid',$content['entryId']);
 			$statement->bindParam('ipaddress',$content['ipAddress']);
 			$statement->bindParam('portnumber',$content['portNumber']);
+			$statement->bindParam('update', date(FULL_DATE_FORMAT));
 			$statement->bindParam('key', $this->app->request()->params('key'));
 			
 			parent::save();
