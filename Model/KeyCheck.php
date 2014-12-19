@@ -59,7 +59,7 @@ class KeyCheck extends Model{
 				$expired = time() - strtotime($result[0]['expire']) > 0;
 				$revoked = $result[0]['revoked'];
 			}
-			$this->description .= ',NOT_VALID:'.(boolval($notValid) ? 'true' : 'false').',EXPIRED:'.(boolval($expired) ? 'true' : 'false').',REVOKED:'.($revoked ? 'true' : 'false');
+			$this->description .= ',NOT_VALID:'.($notValid ? 'true' : 'false').',EXPIRED:'.($expired ? 'true' : 'false').',REVOKED:'.($revoked ? 'true' : 'false');
 			parent::save();
 			if ($notValid){
 				throw new NotAuthorizedException('Illegal Key Found.');
