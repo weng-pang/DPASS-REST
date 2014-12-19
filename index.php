@@ -49,7 +49,7 @@ function addBatchRecord(){
 	$records = json_decode($app->request()->params('content'),true);
 	$results = array();
 	// check the size of content
-	if (sizeof($records) != BATCH_SIZE){
+	if (sizeof($records) != BATCH_SIZE && BATCH_SIZE){
 		$app->halt(BAD_REQUEST,'{"error":{"procedure":"add batch records","text":"Specific Batch Size Required. COUNT:'.sizeof($records).'"}}');
 	}
 	$record->getDatabaseConnection()->getConnection()->beginTransaction();
