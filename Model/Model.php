@@ -23,7 +23,7 @@ class Model{
 		$this->statement = $this->database->getConnection();
 		// Database Logging
 		$this->logStatement = $this->statement->prepare(ADD_LOG_RECORD);
-		$this->logStatement->bindParam('key', $this->app->request()->params('key'));
+		$this->logStatement->bindParam('key', ((is_null($this->app->request()->params('key'))? 0 :$this->app->request()->params('key'))));
 		$this->logStatement->bindParam('ip', $this->app->request->getIp());
 	}
 	
@@ -32,6 +32,7 @@ class Model{
 		//$this->database->getConnection()->beginTransaction();
 		$this->logStatement->bindParam('type',$this->type);
 		$this->logStatement->bindParam('description',$this->description);
+		$this->logStatement->bindParam('time', date(FULL_DATE_FORMAT));
 		$this->logStatement->execute();
 		// for webserver log
 		$this->app->log->info(LOG_HEADER.'IP:'.$this->app->request->getIp().','.$this->type.','.$this->description);
