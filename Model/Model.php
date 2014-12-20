@@ -23,7 +23,10 @@ class Model{
 		$this->statement = $this->database->getConnection();
 		// Database Logging
 		$this->logStatement = $this->statement->prepare(ADD_LOG_RECORD);
-		$this->logStatement->bindParam('key', ((is_null($this->app->request()->params('key'))? 0 :$this->app->request()->params('key'))));
+		//Pay attention to http://stackoverflow.com/questions/14566929/php-and-mysqli-cannot-pass-parameter-2-by-reference-in
+		// The bindParam simply cannot handle 
+		$key = ((is_null($this->app->request()->params('key'))? 0 :$this->app->request()->params('key')));
+		$this->logStatement->bindParam('key',$key );
 		$this->logStatement->bindParam('ip', $this->app->request->getIp());
 	}
 	
