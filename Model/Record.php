@@ -54,7 +54,7 @@ class Record extends Model{
 			
 			parent::save();
 			$statement->execute();
-			return $this->database->getConnection()->lastInsertId();
+			return array('transactionId' => intval($this->database->getConnection()->lastInsertId()));
 		
 		} catch (Exception $e){
 			$this->database->getConnection()->rollBack();
