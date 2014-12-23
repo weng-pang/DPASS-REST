@@ -24,7 +24,7 @@ class KeyCheck extends Model{
 	function validate($key){
 		try{// Pay attention to http://stackoverflow.com/questions/14566929/php-and-mysqli-cannot-pass-parameter-2-by-reference-in
 			$this->type = 'CHECK_KEY';
-			$this->description = 'KEY:'.$key;
+			//$this->description = 'KEY:'.$key;
 			$statement = $this->database->getConnection()->prepare(FIND_API_KEY);
 			// Check configurations
 			$configurationStatement = $this->database->getConnection()->prepare(OBTAIN_SETTING);
