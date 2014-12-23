@@ -110,7 +110,7 @@ class Record extends Model{
 				throw new IllegalContentException('Insufficient Query Content');
 			}
 			$statement->execute();
-			return $statement->fetchAll();
+			return $statement->fetchAll(PDO::FETCH_ASSOC);
 		
 		} catch (Exception $e){
 			$this->database->getConnection()->rollBack();
