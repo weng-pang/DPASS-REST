@@ -66,6 +66,7 @@ class Record extends Model{
 	
 	function find($content){
 		$parameterCount = MAXIMUM_PARAMETER;
+		$this->type = 'FIND_RECORD';
 		try{
 			$statement = $this->statement->prepare(FIND_ENTRY_RECORDS);
 			if (is_null($content))
@@ -76,7 +77,7 @@ class Record extends Model{
 			// for a specific time
 			// one of the criteria must be provided, however any of absence of data is regarded as wildcard
 			// check id
-			if (is_integer($content['id'])){
+			if (isset($content['id']) && is_integer($content['id'])){
 				$statement->bindParam('startid',$content['id']);
 				$statement->bindParam('endid',$content['id']);
 			} else {
@@ -86,7 +87,7 @@ class Record extends Model{
 				$parameterCount--;
 			}
 			// check machine id
-			if (is_integer($content['machineId'])){
+			if (isset($content['machineId']) && is_integer($content['machineId'])){
 				$statement->bindParam('startmachineid',$content['machineId']);
 				$statement->bindParam('endmachineid',$content['machineId']);
 			} else {
@@ -96,7 +97,14 @@ class Record extends Model{
 				$parameterCount--;
 			}
 			// check record period
-			if (strtotime($content['startTime']) < strtotime($content['endTime'])){
+			// give a default variable for the application
+			if (!isset($content['startTime'])){
+				$content['startTime'] = ABSOLUTE_MINIMUM;
+			}
+			if (!isset($content['endTime'])){
+				$content['endTime'] = ABSOLUTE_MINIMUM;
+			}
+			if ((strtotime($content['startTime']) < strtotime($content['endTime']))){
 				$statement->bindParam('starttime', date('Y-m-d H:i', strtotime($content['startTime'])));
 				$statement->bindParam('endtime', date('Y-m-d H:i', strtotime($content['endTime'])));
 			} else {
@@ -104,7 +112,10 @@ class Record extends Model{
 			}
 			// arrange database log	
 			$this->type = 'FIND_RECORD';
-			$this->description =  'ID:'.$content['id'].',MACHINE:'.$content['machineId'].',START:'.date('Y-m-d H:i', strtotime($content['startTime'])).',END:'.date('Y-m-d H:i', strtotime($content['endTime'])).',PARAMETER:'.$parameterCount;
+			$this->description =  'ID:'.(isset($content['id']) ? $content['id']: '-');
+			$this->description .= ',MACHINE:'.(isset($content['machineId']) ? $content['machineId']: '-');
+			$this->description .= ',START:'.($content['startTime'] != ABSOLUTE_MINIMUM) ? date('Y-m-d H:i', strtotime($content['startTime'])):'-'.',END:'.($content['endTime'] != ABSOLUTE_MINIMUM) ? date('Y-m-d H:i', (strtotime($content['endTime']))): '-';
+			$this->description .= ',PARAMETER:'.$parameterCount;
 			parent::save();
 			if ($parameterCount < MINIMUM_REQUIRE){
 				throw new IllegalContentException('Insufficient Query Content');
