@@ -1,5 +1,18 @@
 <?php
-
+/**
+ * --------------------------------------------------
+ * DPASS Restful Service
+ * DPASS Rest
+ * --------------------------------------------------
+ * 
+ * 
+ * 
+ * @author Weng Long Pang
+ * @copyright KATS 2014
+ * @property Valentine Flowers Limited, Macao SAR
+ * @version 1.0
+ * 
+ */
 
 require 'configuration.php';
 
@@ -26,6 +39,10 @@ $app->post('/add','apiKeyCheck','addRecord');
 $app->post('/addbatch','apiKeyCheck','addBatchRecord');
 // view record - all request must be made in a json message
 $app->post('/find','apiKeyCheck','findRecord');
+// revoke ('delete') a record
+$app->post('/revoke','apiKeyCheck','revokeRecord');
+// check for update records
+$app->post('/check','apiKeyCheck','checkUpdates');
 
 $app->notFound('notAvailable');
 
@@ -87,7 +104,37 @@ function findRecord(){
 	echo json_encode($record->find($content));
 	$record->getDatabaseConnection()->getConnection()->commit();
 }
+/**
+ * Revoke a record
+ * 
+ * 
+ */
+function revokeRecord(){
+	global $app;
+	global $record;
+	
+	$request = $app->request();
+	$content = json_decode(($request->params('content')),true);
+	$record->getDatabaseConnection()->getConnection()->beginTransaction();
+	echo json_encode($record->revoke($content));
+	$record->getDatabaseConnection()->getConnection()->commit();
+}
 
+/**
+ * Check updates
+ * 
+ * 
+ */
+function checkUpdates(){
+	global $app;
+	global $record;
+	
+	$request = $app->request();
+	//$content = json_decode(($request->params('content')),true);
+	$record->getDatabaseConnection()->getConnection()->beginTransaction();
+	echo json_encode($record->checkUpdates());
+	$record->getDatabaseConnection()->getConnection()->commit();
+}
 // procedure for not found methods
 function notAvailable(){
 	global $app;

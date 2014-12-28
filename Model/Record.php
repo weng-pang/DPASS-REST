@@ -24,7 +24,16 @@ class Record extends Model{
 	function __construct($app){
 		parent::__construct($app);
 	}
-	
+	/**
+	 * add 
+	 * This function adds a single record to the database
+	 * The input content must conform with a specific content in order to add a recotd successfully
+	 * 
+	 * 
+	 * @param json $content
+	 * @throws IllegalContentException
+	 * @return json
+	 */
 	function add($content){
 		try{
 			if (is_null($content))
@@ -63,7 +72,20 @@ class Record extends Model{
 			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"add record","text":"'.$e->getMessage().'"}}');
 		}
 	}
-	
+	/**
+	 * Find 
+	 * This function finds records under a range of criterion using json message
+	 * json message may consist of the following objectives :
+	 * for a specific id
+	 * for a specific machine
+	 * for a specific time
+	 * at least one of the criteria must be provided (exception may be thrown)
+	 * , however any of absence of data is regarded as wildcard
+	 * 
+	 * @param json $content
+	 * @throws IllegalContentException
+	 * @return json:
+	 */
 	function find($content){
 		$parameterCount = MAXIMUM_PARAMETER;
 		$this->type = 'FIND_RECORD';
@@ -71,12 +93,7 @@ class Record extends Model{
 			$statement = $this->statement->prepare(FIND_ENTRY_RECORDS);
 			if (is_null($content))
 				throw new IllegalContentException('Please Check Input Parameters ');
-			// json message may consist of the following objectives :
-			// for a specific id
-			// for a specific machine
-			// for a specific time
-			// one of the criteria must be provided, however any of absence of data is regarded as wildcard
-			// check id
+			// // check id
 			if (isset($content['id']) && is_integer($content['id'])){
 				$statement->bindParam('startid',$content['id']);
 				$statement->bindParam('endid',$content['id']);
@@ -130,4 +147,58 @@ class Record extends Model{
 			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"find records","text":"'.$e->getMessage().'"}}');
 		}
 	}
+	
+	/**
+	 * check update
+	 * This function returns the latest updated record from the database except revoked records
+	 * It is primary used for information auditing to ensure all records are uploaded frequently
+	 */
+	function checkUpdates(){
+		$this->type = 'CHECK_UPDATES';
+		$this->description = 'Check for update from current database';
+		try{
+			$statement = $this->statement->prepare(CHECK_UPDATES);
+			$statement->execute();
+			return $statement->fetchAll(PDO::FETCH_ASSOC);
+		} catch (Exception $e){
+			$this->database->getConnection()->rollBack();
+			$this->description .= ','.$e->getMessage();
+			parent::save();
+			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"check updates","text":"'.$e->getMessage().'"}}');
+		}
+	}
+	
+	
+	/**
+	 * revoke
+	 * Attndance record may be revoked, under the authority given by a manager
+	 * The record itself is to be marked as revoked, but a log record will cover enerything concerning the revoke of record in concern
+	 * 
+	 * @param array $content['serial'] 
+	 */
+	function revoke($content){
+		$this->type = 'REVOKE';
+		$this->description =  'TRANSACTIONID:'.$content['serial'];
+		try{
+			if (is_null($content)) // the content must be provided
+				throw new IllegalContentException('Please Provide the Transaction ID Number ');
+			$statement = $this->statement->prepare(REVOKE_RECORD);
+			$statement->bindParam('serial',$content['serial']);
+			$statement->bindParam('update', date(FULL_DATE_FORMAT));
+			parent::save();
+			$statement->execute();
+			// check for data integrity - no invalid serial number given here
+			if ($statement->rowCount())
+				return $content;
+			throw new IllegalContentException('Please Provide a correct Transaction ID Number ');
+		} catch (Exception $e){
+			$this->database->getConnection()->rollBack();
+			$this->description .= ','.$e->getMessage();
+			parent::save();
+			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"revoke record","text":"'.$e->getMessage().'"}}');
+		}
+		
+			
+	}
+	
 }
