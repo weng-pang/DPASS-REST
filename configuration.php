@@ -31,7 +31,7 @@ define('FULL_DATE_FORMAT','Y-m-d H:i:s');
 define('BATCH_SIZE',0);
 
 // Record Settings
-define('MAXIMUM_ENTRY_ID',4);
+define('MAXIMUM_ENTRY_ID',6);
 define('MAXIMUM_MACHINE_ID',999);
 define('MAXIMUM_ID',9999);
 define('IP_REGEX','/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/');
