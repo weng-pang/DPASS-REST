@@ -168,6 +168,25 @@ class Record extends Model{
 		}
 	}
 	
+	/**
+	 * check latest record
+	 * This function returns the latest record entry with respect to each profile on the databaase.
+	 * Important: The records are not realtime, they are updated by periodic uploads.
+	 */
+	function checkRecords(){
+		$this->type = 'CHECK_LATEST_RECORD';
+		$this->description = 'Check for latest record upload';
+		try{
+			$statement = $this->statement->prepare(CHECK_LATEST_RECORD);
+			$statement->execute();
+			return $statement->fetchAll(PDO::FETCH_ASSOC);
+		} catch (Exception $e){
+			$this->database->getConnection()->rollBack();
+			$this->description .= ','.$e->getMessage();
+			parent::save();
+			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"check updates","text":"'.$e->getMessage().'"}}');
+		}
+	}
 	
 	/**
 	 * revoke

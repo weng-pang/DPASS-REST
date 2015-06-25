@@ -43,6 +43,8 @@ $app->post('/find','apiKeyCheck','findRecord');
 $app->post('/revoke','apiKeyCheck','revokeRecord');
 // check for update records
 $app->post('/check','apiKeyCheck','checkUpdates');
+// check for staff latest record
+$app->post('/check_profile','apiKeyCheck','checkProfileUpdate');
 
 $app->notFound('notAvailable');
 
@@ -133,6 +135,21 @@ function checkUpdates(){
 	//$content = json_decode(($request->params('content')),true);
 	$record->getDatabaseConnection()->getConnection()->beginTransaction();
 	echo json_encode($record->checkUpdates());
+	$record->getDatabaseConnection()->getConnection()->commit();
+}
+
+/**
+ * Look for latest staff entry (delayed)
+ * This looks for the last entry of each staff, however it is subject to machine udpates.
+ * 
+ */
+function checkProfileUpdate(){
+	global $app;
+	global $record;
+	
+	$request = $app -> request();
+	$record->getDatabaseConnection()->getConnection()->beginTransaction();
+	echo json_encode($record -> checkRecords());
 	$record->getDatabaseConnection()->getConnection()->commit();
 }
 // procedure for not found methods

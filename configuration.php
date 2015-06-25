@@ -45,6 +45,7 @@ define('ADD_LOG_RECORD','INSERT INTO `log`( `key`, `ip`, `description`, `type`,`
 define('REVOKE_RECORD','UPDATE `records` SET `revoked` = 1,`update`=:update WHERE `serial` = :serial');
 define('CHECK_UPDATES','SELECT `machineid`,MAX(`update`) AS "update" FROM `records` WHERE `revoked` = 0 GROUP BY `machineid`');
 define('OBTAIN_SETTING','SELECT * FROM `configurations`');
+define('CHECK_LATEST_RECORD','SELECT `id`,MAX(`update`) AS "update", `machineid` FROM `records` WHERE `revoked` = 0 GROUP BY `id`');
 
 // Find Parameters
 define('MAXIMUM_PARAMETER',4);
