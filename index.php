@@ -8,9 +8,9 @@
  * 
  * 
  * @author Weng Long Pang
- * @copyright KATS 2014
+ * @copyright KATS 2015
  * @property Valentine Flowers Limited, Macao SAR
- * @version 1.0
+ * @version 1.1
  * 
  */
 
@@ -149,7 +149,22 @@ function checkProfileUpdate(){
 	
 	$request = $app -> request();
 	$record->getDatabaseConnection()->getConnection()->beginTransaction();
-	echo json_encode($record -> checkRecords());
+	echo json_encode($record -> checkRecords(LATEST_STAFF_ENTRIES));
+	$record->getDatabaseConnection()->getConnection()->commit();
+}
+
+/**
+ * Check latest machine report status
+ * 
+ * 
+ */
+function checkComputerReports(){
+	global $app;
+	global $record;
+	
+	$request = $app -> request();
+	$record->getDatabaseConnection()->getConnection()->beginTransaction();
+	echo json_encode($record -> checkRecords(COMPUTER_REPORTS));
 	$record->getDatabaseConnection()->getConnection()->commit();
 }
 // procedure for not found methods

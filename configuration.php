@@ -33,8 +33,11 @@ define('BATCH_SIZE',0);
 // Record Settings
 define('MAXIMUM_ENTRY_ID',6);
 define('MAXIMUM_MACHINE_ID',999);
+define('MAXIMUM_STAFF_ID',999);
 define('MAXIMUM_ID',9999);
 define('IP_REGEX','/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/');
+define('STUDENT_REGEX','3'); //TODO find numeric regex
+define('COMPUTER_REGEX','6');
 
 // SQL Strings
 define('ADD_SINGLE_RECORD','INSERT INTO `records`(`id`, `datetime`, `machineid`, `entryid`, `ipaddress`, `portnumber`, `key`, `update`) VALUES (:id,:datetime,:machineid,:entryid,:ipaddress,:portnumber,:key,:update)');
@@ -45,13 +48,19 @@ define('ADD_LOG_RECORD','INSERT INTO `log`( `key`, `ip`, `description`, `type`,`
 define('REVOKE_RECORD','UPDATE `records` SET `revoked` = 1,`update`=:update WHERE `serial` = :serial');
 define('CHECK_UPDATES','SELECT `machineid`,MAX(`update`) AS "update" FROM `records` WHERE `revoked` = 0 GROUP BY `machineid`');
 define('OBTAIN_SETTING','SELECT * FROM `configurations`');
-define('CHECK_LATEST_RECORD','SELECT `id`,MAX(`update`) AS "update", `machineid` FROM `records` WHERE `revoked` = 0 GROUP BY `id`');
+define('CHECK_LATEST_RECORD','SELECT `id`,MAX(`update`) AS "update", `machineid` FROM `records` WHERE `revoked` = 0 AND `id` <=' . MAXIMUM_STAFF_ID . ' GROUP BY `id`');
+//TODO check if regex comparison possible
 
 // Find Parameters
 define('MAXIMUM_PARAMETER',4);
 define('MINIMUM_REQUIRE',1);
 define('ABSOLUTE_MINIMUM',1);
 define('ABSOLUTE_MAXIMUM',9999999999);
+
+// Record Check Typs
+define('LATEST_STAFF_ENTRIES',1);
+define('COMPUTER_REPORTS',2);
+define('LATEST_STUDENT_ENTRIES',3);
 
 // ERROR 
 define('GENERIC_ERROR',500);

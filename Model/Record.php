@@ -9,6 +9,7 @@
  * @throws IllegalContentException
  */
 class IllegalContentException extends Exception{};
+class IllegalCheckRequestException extends Exception{};
 
 class Record extends Model{	
 	private $id;
@@ -173,11 +174,23 @@ class Record extends Model{
 	 * This function returns the latest record entry with respect to each profile on the databaase.
 	 * Important: The records are not realtime, they are updated by periodic uploads.
 	 */
-	function checkRecords(){
+	function checkRecords($request){
 		$this->type = 'CHECK_LATEST_RECORD';
 		$this->description = 'Check for latest record upload';
 		try{
-			$statement = $this->statement->prepare(CHECK_LATEST_RECORD);
+			switch ($request){
+				case LATEST_STAFF_ENTRIES:
+					$statement = $this->statement->prepare(CHECK_LATEST_RECORD);
+					break;
+				case COMPUTER_REPORTS:
+					$statement = $this->statement->prepare($statement); //TODO change this one
+					break;
+				case LATEST_STUDENT_ENTRIES:
+					$statement = $this->statement->prepare($statement); //TODO this one as well
+					break;
+				default:
+					throw IllegalCheckRequestException('This Request does not exist');
+			}
 			$statement->execute();
 			return $statement->fetchAll(PDO::FETCH_ASSOC);
 		} catch (Exception $e){
