@@ -10,6 +10,6 @@
  * 
  */
 // Database Settings
-define('DB_CONNECTION_STRING', 'mysql:host=localhost;dbname=dpass-lite');
+define('DB_CONNECTION_STRING', 'mysql:host=127.0.0.1;dbname=dpass-lite');
 define('DB_USER','dpass-lite');
 define('DB_PASSWORD','dpass-lite');
