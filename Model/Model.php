@@ -33,10 +33,11 @@ class Model{
 	
 	function save(){
 		// for database log
+        $time = date(FULL_DATE_FORMAT);
 		//$this->database->getConnection()->beginTransaction();
 		$this->logStatement->bindParam('type',$this->type);
 		$this->logStatement->bindParam('description',$this->description);
-		$this->logStatement->bindParam('time', date(FULL_DATE_FORMAT));
+		$this->logStatement->bindParam('time', $time);
 		$this->logStatement->execute();
 		// for webserver log
 		$this->app->log->info(LOG_HEADER.'IP:'.$this->app->request->getIp().','.$this->type.','.$this->description);
