@@ -26,6 +26,7 @@ define('APP_NAME','DPASS-REST');
 $timeNow = new DateTime('now');
 define('LOG_HEADER','['.date('D M d H:i:s'.substr((string)microtime(), 1, 7).' Y').'] ['.APP_NAME.'] ');
 define('FULL_DATE_FORMAT','Y-m-d H:i:s');
+define('FULL_DATE_FORMAT_SEARCH','Y-m-d H:i');
 
 // Bacth Settings
 define('BATCH_SIZE',0);
@@ -49,6 +50,8 @@ define('REVOKE_RECORD','UPDATE `records` SET `revoked` = 1,`update`=:update WHER
 define('CHECK_UPDATES','SELECT `machineid`,MAX(`update`) AS "update" FROM `records` WHERE `revoked` = 0 GROUP BY `machineid`');
 define('OBTAIN_SETTING','SELECT * FROM `configurations`');
 define('CHECK_LATEST_RECORD','SELECT `id`,MAX(`update`) AS "update", `machineid` FROM `records` WHERE `revoked` = 0 AND `id` <=' . MAXIMUM_STAFF_ID . ' GROUP BY `id`');
+define('APPROVE','INSERT INTO `record_approvals` (`serial`, `record_serial`, `id`, `power`, `datetime`, `revoked`, `update`) VALUES (NULL,:serial, \'1\', \'100\', CURRENT_TIMESTAMP, \'0\', CURRENT_TIMESTAMP)');
+define('DISAPPROVE','UPDATE `record_approvals` SET `revoked` = \'2\', `update` = CURRENT_TIMESTAMP WHERE `record_approvals`.`serial` = :serial');
 //TODO check if regex comparison possible
 
 // Find Parameters

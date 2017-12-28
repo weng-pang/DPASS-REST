@@ -18,12 +18,14 @@ class Record extends Model{
 	private $entryId;
 	private $ipAddress;
 	private $portNumber;
+	private $updateDate;
 	
 	private $minimum = ABSOLUTE_MINIMUM;
 	private $maximum = ABSOLUTE_MAXIMUM;
 	
 	function __construct($app){
 		parent::__construct($app);
+		$this->updateDate = date(FULL_DATE_FORMAT);
 	}
 	/**
 	 * add 
@@ -42,6 +44,7 @@ class Record extends Model{
 			// arrange database log
 			$this->type = 'ADD_RECORD';
 			$this->description =  'ID:'.$content['id'].',MACHINE:'.$content['machineId'].',TIME:'.date('Y-m-d H:i', strtotime($content['dateTime'])).',TYPE:'.$content['entryId'].',MACHINEIP:'.$content['ipAddress'];
+
 			$statement = $this->statement->prepare(ADD_SINGLE_RECORD);
 			if (!is_integer($content['id']) || $content['id'] > MAXIMUM_ID)
 				throw new IllegalContentException('Incorrect ID:'.$content['id']);
@@ -53,14 +56,17 @@ class Record extends Model{
 				throw new IllegalContentException('Incorrect Date:'.$content['dateTime']);
 			if (!preg_match(IP_REGEX, $content['ipAddress']))
 				throw new IllegalContentException('Incorrect IP Address:'.$content['ipAddress']);
+
+            $key = $this->app->request()->params('key');
+
 			$statement->bindParam('id',$content['id']);
 			$statement->bindParam('datetime',$content['dateTime']);
 			$statement->bindParam('machineid',$content['machineId']);
-			$statement->bindParam('entryid',$content['entryId']);
-			$statement->bindParam('ipaddress',$content['ipAddress']);
-			$statement->bindParam('portnumber',$content['portNumber']);
-			$statement->bindParam('update', date(FULL_DATE_FORMAT));
-			$statement->bindParam('key', $this->app->request()->params('key'));
+			$statement->bindParam('entryid', $content['entryId']);
+			$statement->bindParam('ipaddress', $content['ipAddress']);
+			$statement->bindParam('portnumber', $content['portNumber']);
+			$statement->bindParam('update', $this->updateDate);
+			$statement->bindParam('key', $key);
 			
 			parent::save();
 			$statement->execute();
@@ -90,7 +96,7 @@ class Record extends Model{
 	function find($content){
 		$parameterCount = MAXIMUM_PARAMETER;
 		$this->type = 'FIND_RECORD';
-		try{
+//		try{
 			$statement = $this->statement->prepare(FIND_ENTRY_RECORDS);
 			if (is_null($content))
 				throw new IllegalContentException('Please Check Input Parameters ');
@@ -118,35 +124,39 @@ class Record extends Model{
 			// give a default variable for the application
 			if (!isset($content['startTime'])){
 				$content['startTime'] = ABSOLUTE_MINIMUM;
+                $parameterCount--;
 			}
 			if (!isset($content['endTime'])){
-				$content['endTime'] = ABSOLUTE_MINIMUM;
+				$content['endTime'] = ABSOLUTE_MAXIMUM - 1000;
+                $parameterCount--;
 			}
-			if ((strtotime($content['startTime']) < strtotime($content['endTime']))){
-				$statement->bindParam('starttime', date('Y-m-d H:i', strtotime($content['startTime'])));
-				$statement->bindParam('endtime', date('Y-m-d H:i', strtotime($content['endTime'])));
-			} else {
-				$parameterCount = $parameterCount - 2;
-			}
+        $startTime = date(FULL_DATE_FORMAT_SEARCH, strtotime($content['startTime']));
+        $endTime = date(FULL_DATE_FORMAT_SEARCH, strtotime($content['endTime'])); echo $endTime;
+        $statement->bindParam('starttime', $startTime);
+        $statement->bindParam('endtime', $endTime);
+        
 			// arrange database log	
 			$this->type = 'FIND_RECORD';
 			$this->description =  'ID:'.(isset($content['id']) ? $content['id']: '-');
 			$this->description .= ',MACHINE:'.(isset($content['machineId']) ? $content['machineId']: '-');
-			$this->description .= ',START:'.($content['startTime'] != ABSOLUTE_MINIMUM) ? date('Y-m-d H:i', strtotime($content['startTime'])):'-'.',END:'.($content['endTime'] != ABSOLUTE_MINIMUM) ? date('Y-m-d H:i', (strtotime($content['endTime']))): '-';
+			$this->description .= ',START:';
+			$this->description .= ($content['startTime'] >= ABSOLUTE_MINIMUM) ? date(FULL_DATE_FORMAT_SEARCH, strtotime($content['startTime'])):'-';
+			$this->description .= ',END:';
+			$this->description .= ($content['endTime'] <= ABSOLUTE_MAXIMUM) ? date(FULL_DATE_FORMAT_SEARCH, (strtotime($content['endTime']))): '-';
 			$this->description .= ',PARAMETER:'.$parameterCount;
-			parent::save();
+			parent::save(); echo $this->description;
 			if ($parameterCount < MINIMUM_REQUIRE){
 				throw new IllegalContentException('Insufficient Query Content');
 			}
 			$statement->execute();
 			return $statement->fetchAll(PDO::FETCH_ASSOC);
 		
-		} catch (Exception $e){
-			$this->database->getConnection()->rollBack();
-			$this->description .= ','.$e->getMessage();
-			parent::save();
-			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"find records","text":"'.$e->getMessage().'"}}');
-		}
+//		} catch (Exception $e){
+//			$this->database->getConnection()->rollBack();
+//			$this->description .= ','.$e->getMessage();
+//			parent::save();
+//			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"find records","text":"'.$e->getMessage().'"}}');
+//		}
 	}
 	
 	/**
@@ -206,7 +216,8 @@ class Record extends Model{
 	 * Attndance record may be revoked, under the authority given by a manager
 	 * The record itself is to be marked as revoked, but a log record will cover enerything concerning the revoke of record in concern
 	 * 
-	 * @param array $content['serial'] 
+	 * @param array $content['serial']
+     * @retun null
 	 */
 	function revoke($content){
 		$this->type = 'REVOKE';
@@ -216,7 +227,7 @@ class Record extends Model{
 				throw new IllegalContentException('Please Provide the Transaction ID Number ');
 			$statement = $this->statement->prepare(REVOKE_RECORD);
 			$statement->bindParam('serial',$content['serial']);
-			$statement->bindParam('update', date(FULL_DATE_FORMAT));
+			$statement->bindParam('update', $this->updateDate);
 			parent::save();
 			$statement->execute();
 			// check for data integrity - no invalid serial number given here
@@ -229,8 +240,59 @@ class Record extends Model{
 			parent::save();
 			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"revoke record","text":"'.$e->getMessage().'"}}');
 		}
-		
-			
 	}
-	
+
+    /**
+     * approve
+     * Approve attendance record entry by staff
+     *
+     * @param $content
+     */
+    function approve($content){
+        try{
+            if (is_null($content))
+                throw new IllegalContentException('Please Check Input Parameters ');
+            // arrange database log
+            $this->type = 'APPROVE_RECORD';
+            $this->description =  'ID:'.$content['id'].',MACHINE:'.$content['machineId'].',TIME:'.date('Y-m-d H:i', strtotime($content['dateTime'])).',TYPE:'.$content['entryId'].',MACHINEIP:'.$content['ipAddress'];
+            $statement = $this->statement->prepare(ADD_SINGLE_RECORD);
+            if (!is_integer($content['id']) || $content['id'] > MAXIMUM_ID)
+                throw new IllegalContentException('Incorrect ID:'.$content['id']);
+            if (!is_integer($content['machineId']) || $content['machineId'] > MAXIMUM_MACHINE_ID)
+                throw new IllegalContentException('Incorrect Machine ID:'.$content['machineId']);
+            if (!is_integer($content['entryId']) || $content['entryId'] > MAXIMUM_ENTRY_ID)
+                throw new IllegalContentException('Incorrect Entry ID:'.$content['entryId']);
+            if (!strtotime($content['dateTime']))
+                throw new IllegalContentException('Incorrect Date:'.$content['dateTime']);
+            if (!preg_match(IP_REGEX, $content['ipAddress']))
+                throw new IllegalContentException('Incorrect IP Address:'.$content['ipAddress']);
+            $statement->bindParam('id',$content['id']);
+            $statement->bindParam('datetime',$content['dateTime']);
+            $statement->bindParam('machineid',$content['machineId']);
+            $statement->bindParam('entryid',$content['entryId']);
+            $statement->bindParam('ipaddress',$content['ipAddress']);
+            $statement->bindParam('portnumber',$content['portNumber']);
+            $statement->bindParam('update', date(FULL_DATE_FORMAT));
+            $statement->bindParam('key', $this->app->request()->params('key'));
+
+            parent::save();
+            $statement->execute();
+            return array('transactionId' => intval($this->database->getConnection()->lastInsertId()));
+
+        } catch (Exception $e){
+            $this->database->getConnection()->rollBack();
+            $this->description .= ','.$e->getMessage();
+            parent::save();
+            $this->app->halt(BAD_REQUEST,'{"error":{"procedure":"add record","text":"'.$e->getMessage().'"}}');
+        }
+    }
+
+    /**
+     * disapprove
+     * Revoke attendance record entry by staff
+     * @param $content
+     */
+    function disapprove($content){
+
+    }
 }

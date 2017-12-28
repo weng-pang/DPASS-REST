@@ -28,6 +28,10 @@ $app->post('/revoke','apiKeyCheck','revokeRecord');
 $app->post('/check','apiKeyCheck','checkUpdates');
 // check for staff latest record
 $app->post('/check_profile','apiKeyCheck','checkProfileUpdate');
+// approve a record
+$app->post('/approve','apiKeyCheck','approveRecord');
+// revoke an approval
+$app->post('/disapprove','apiKeyCheck','disapproveRecord');
 
 // background configuration
 
@@ -97,7 +101,7 @@ function revokeRecord(){
 /**
  * Check updates
  *
- *
+ * This method gives the latest date of each machine id
  */
 function checkUpdates(){
 	global $app;
@@ -138,4 +142,13 @@ function checkComputerReports(){
 	$record->getDatabaseConnection()->getConnection()->beginTransaction();
 	echo json_encode($record -> checkRecords(COMPUTER_REPORTS));
 	$record->getDatabaseConnection()->getConnection()->commit();
+}
+
+
+function approveRecord(){
+
+}
+
+function disapproveRecord(){
+
 }
