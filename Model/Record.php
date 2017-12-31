@@ -125,16 +125,20 @@ class Record extends Model{
 			if (!isset($content['startTime'])){
 				$content['startTime'] = ABSOLUTE_MINIMUM;
                 $parameterCount--;
-			}
+			} else {
+                $content['startTime'] = strtotime($content['startTime']);
+            }
 			if (!isset($content['endTime'])){
-				$content['endTime'] = ABSOLUTE_MAXIMUM - 1000;
+				$content['endTime'] = ABSOLUTE_MAXIMUM;
                 $parameterCount--;
-			}
-        $startTime = date(FULL_DATE_FORMAT_SEARCH, strtotime($content['startTime']));
-        $endTime = date(FULL_DATE_FORMAT_SEARCH, strtotime($content['endTime'])); echo $endTime;
-        $statement->bindParam('starttime', $startTime);
-        $statement->bindParam('endtime', $endTime);
-        
+			} else {
+                $content['endTime'] = strtotime($content['endTime']);
+            }
+            $startTime = date(FULL_DATE_FORMAT_SEARCH, $content['startTime']);
+            $endTime = date(FULL_DATE_FORMAT_SEARCH, $content['endTime']);
+            $statement->bindParam('starttime', $startTime);
+            $statement->bindParam('endtime', $endTime);
+
 			// arrange database log	
 			$this->type = 'FIND_RECORD';
 			$this->description =  'ID:'.(isset($content['id']) ? $content['id']: '-');
@@ -144,7 +148,7 @@ class Record extends Model{
 			$this->description .= ',END:';
 			$this->description .= ($content['endTime'] <= ABSOLUTE_MAXIMUM) ? date(FULL_DATE_FORMAT_SEARCH, (strtotime($content['endTime']))): '-';
 			$this->description .= ',PARAMETER:'.$parameterCount;
-			parent::save(); echo $this->description;
+			parent::save();
 			if ($parameterCount < MINIMUM_REQUIRE){
 				throw new IllegalContentException('Insufficient Query Content');
 			}
