@@ -10,10 +10,10 @@
  * @author Weng Long Pang
  * @copyright KATS 2015
  * @property Valentine Flower Limited, Macao SAR
- * @version 1.2
+ * @version 1.3
  * 
  */
-
+header("Access-Control-Allow-Origin: *");
 require 'configuration.php';
 
 \Slim\Slim::registerAutoloader();
