@@ -26,17 +26,17 @@ class Model{
 		//Pay attention to http://stackoverflow.com/questions/14566929/php-and-mysqli-cannot-pass-parameter-2-by-reference-in
 		// The bindParam simply cannot handle 
 		$key = ((is_null($this->app->request()->params('key'))? 0 :$this->app->request()->params('key')));
-		$ip = $this->app->request->getIp();
-		$this->logStatement->bindParam('key',$key);
+		$this->logStatement->bindParam('key',$key ); 
+        $ip = $this->app->request->getIp(); // For Strict Standards: Only variables should be passed by reference
 		$this->logStatement->bindParam('ip', $ip);
 	}
 	
 	function save(){
 		// for database log
-        $time = date(FULL_DATE_FORMAT);
-		//$this->database->getConnection()->beginTransaction();
+		//$this->database->getConnection()->beginTransaction(); 
 		$this->logStatement->bindParam('type',$this->type);
 		$this->logStatement->bindParam('description',$this->description);
+        $time = date(FULL_DATE_FORMAT); // For Strict Standards: Only variables should be passed by reference
 		$this->logStatement->bindParam('time', $time);
 		$this->logStatement->execute();
 		// for webserver log
