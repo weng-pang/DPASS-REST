@@ -1,3 +1,4 @@
 /.idea
 /vendor
 DatabaseConfiguration.php
+error_log
