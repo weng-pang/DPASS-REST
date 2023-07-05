@@ -220,8 +220,8 @@ class Record extends Model{
 	 * Attndance record may be revoked, under the authority given by a manager
 	 * The record itself is to be marked as revoked, but a log record will cover enerything concerning the revoke of record in concern
 	 * 
-	 * @param array $content['serial']
-     * @retun null
+	 * @param array $content['serial'] Example: {"serial": "123456789"}
+	 * @return null
 	 */
 	function revoke($content){
 		$this->type = 'REVOKE';
