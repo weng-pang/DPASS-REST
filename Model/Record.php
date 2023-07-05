@@ -83,12 +83,19 @@ class Record extends Model{
 	 * Find 
 	 * This function finds records under a range of criterion using json message
 	 * json message may consist of the following objectives :
-	 * for a specific id
-	 * for a specific machine
-	 * for a specific time
+	 * for a specific id { "id": 123 }
+	 * for a specific machine { "machineId": 456 }
+	 * for a specific time { "startTime": "2023-07-01 00:00:00", "endTime": "2023-07-05 23:59:59" }
 	 * at least one of the criteria must be provided (exception may be thrown)
 	 * , however any of absence of data is regarded as wildcard
-	 * 
+	 * Possible all criteria:
+	 * {
+   * 	 "id": 123,
+   * 	 "machineId": 101,
+   *   "startTime": "2023-07-01 00:00:00",
+   *   "endTime": "2023-07-05 23:59:59"
+   * }
+   *
 	 * @param json $content
 	 * @throws IllegalContentException
 	 * @return json:
