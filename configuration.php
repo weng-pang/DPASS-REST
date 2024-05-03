@@ -69,3 +69,6 @@ define('LATEST_STUDENT_ENTRIES',3);
 define('GENERIC_ERROR',500);
 define('BAD_REQUEST',400);
 define('NOT_AUTHORISED',403);
+
+// Define timezone
+date_default_timezone_set("Asia/Macau");
