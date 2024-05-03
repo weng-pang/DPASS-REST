@@ -49,8 +49,6 @@ $app->notFound('notAvailable');
 $app->run();
 // procedure for not found methods
 function notAvailable(){
-	global $app;
-	//$app->response->setStatus(501);
-	
-	$app->halt(501,'{"error":{"text":"Method Not Available"}}') ;
+	global $app;	
+	$app->halt(405,'{"error":{"text":"Method Not Allowed"}}') ;
 }
