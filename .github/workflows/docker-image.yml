@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout
+        uses: actions/checkout@v4
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -35,6 +37,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5.3.0
         with:
+          context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/dpass:latest , ${{ secrets.DOCKERHUB_USERNAME }}/dpass:${{ steps.set-datetime.outputs.NOW}} , ${{ secrets.DOCKERHUB_USERNAME }}/dpass:${{ steps.commit.outputs.short}}
             
