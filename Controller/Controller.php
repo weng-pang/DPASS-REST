@@ -25,6 +25,6 @@ $app->get('/version','showVersion');
  * 
  */
 function showVersion() {
-	$output = array("version" => readfile("version/tag"), "commit" => readfile("ersion/commit"));
+	$output = array("version" => file_get_contents("versions/tag"), "commit" => file_get_contents("versions/commit"));
 	echo json_encode($output);
 }

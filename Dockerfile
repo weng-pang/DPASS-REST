@@ -9,4 +9,4 @@ COPY  --chown=nobody *.php .
 COPY  --chown=nobody Controller/ ./Controller
 COPY  --chown=nobody Model/ ./Model
 COPY  --chown=nobody Slim ./Slim
-COPY  --chown=nobody version ./version
+COPY  --chown=nobody versions ./versions
