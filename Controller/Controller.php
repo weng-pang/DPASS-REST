@@ -16,3 +16,15 @@
  */
 
 require 'RecordController.php';
+
+$app->get('/version','showVersion');
+
+/**
+ * showVersion()
+ * Display version and commit info of this application.
+ * 
+ */
+function showVersion() {
+	$output = array("version" => readfile("version/tag"), "commit" => readfile("ersion/commit"));
+	echo json_encode($output);
+}
