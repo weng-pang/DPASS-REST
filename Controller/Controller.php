@@ -25,6 +25,10 @@ $app->get('/version','showVersion');
  * 
  */
 function showVersion() {
-	$output = array("version" => file_get_contents("versions/tag"), "commit" => file_get_contents("versions/commit"));
+	$tag_file = fopen("versions/tag", "r");
+	$commit_file = fopen("versions/commit", "r");
+	$output = array("version" => fgets($tag_file), "commit" => fgets($commit_file));
 	echo json_encode($output);
+	fclose($tag_file);
+	fclose($commit_file);
 }
