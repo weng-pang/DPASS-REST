@@ -25,6 +25,7 @@ $app->get('/version','showVersion');
  * 
  */
 function showVersion() {
-	$output = array("version" => file_get_contents("versions/tag"), "commit" => file_get_contents("versions/commit"));
+	$line_breaks = array("\r", "\n");
+	$output = array("version" => str_replace($line_breaks, '' , file_get_contents("versions/tag")) , "commit" => str_replace($line_breaks, '', file_get_contents("versions/commit")));
 	echo json_encode($output);
 }
