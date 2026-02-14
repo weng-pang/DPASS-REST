@@ -99,11 +99,12 @@ This approach ensures:
 
 ### Configuration File
 
-For non-Docker deployments, you can still use the traditional configuration file approach:
+The `DatabaseConfiguration.php` file is included in the repository with environment variable support built-in. If you need to customize the default values:
 
-1. Copy `DatabaseConfiguration.default.php` to `DatabaseConfiguration.php`
-2. Edit `DatabaseConfiguration.php` with your database settings
-3. The application will use the values from this file if environment variables are not set
+1. Edit `DatabaseConfiguration.php` directly, or
+2. Copy `DatabaseConfiguration.default.php` to `DatabaseConfiguration.php` and modify as needed
+
+**Note:** The application will use environment variables if they are set, regardless of the hardcoded values in the configuration file.
 
 ## Development
 
