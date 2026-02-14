@@ -2,3 +2,6 @@
 /vendor
 DatabaseConfiguration.php
 error_log
+
+# Environment files (contains sensitive data)
+.env
