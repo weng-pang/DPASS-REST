@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  dpass:
+    image: wengpang/dpass:latest
+    ports:
+      - "8080:8080"
+    environment:
+      # Database configuration
+      # Replace these values with your actual database settings
+      DB_HOST: mysql-server
+      DB_NAME: dpass_database
+      DB_USER: dpass_user
+      DB_PASSWORD: change_this_password
+    # Alternatively, use an env_file to keep sensitive data separate
+    # env_file:
+    #   - .env
+    networks:
+      - dpass-network
+
+  # Optional: MySQL database service
+  # Uncomment if you want to run MySQL in a container
+  # mysql:
+  #   image: mysql:8.0
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root_password
+  #     MYSQL_DATABASE: dpass_database
+  #     MYSQL_USER: dpass_user
+  #     MYSQL_PASSWORD: change_this_password
+  #   volumes:
+  #     - mysql-data:/var/lib/mysql
+  #   networks:
+  #     - dpass-network
+
+networks:
+  dpass-network:
+    driver: bridge
+
+# volumes:
+#   mysql-data:
