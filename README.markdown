@@ -99,12 +99,9 @@ This approach ensures:
 
 ### Configuration File
 
-The `DatabaseConfiguration.php` file is included in the repository with environment variable support built-in. If you need to customize the default values:
+The `DatabaseConfiguration.php` file is included in the repository with environment variable support and safe default values. The application will automatically use environment variables when they are set, overriding any hardcoded values.
 
-1. Edit `DatabaseConfiguration.php` directly, or
-2. Copy `DatabaseConfiguration.default.php` to `DatabaseConfiguration.php` and modify as needed
-
-**Note:** The application will use environment variables if they are set, regardless of the hardcoded values in the configuration file.
+For local development or non-Docker deployments, you can edit `DatabaseConfiguration.php` directly to change the default values if needed.
 
 ## Development
 
