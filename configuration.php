@@ -44,6 +44,7 @@ define('COMPUTER_REGEX','6');
 define('ADD_SINGLE_RECORD','INSERT INTO `records`(`id`, `datetime`, `machineid`, `entryid`, `ipaddress`, `portnumber`, `key`, `update`) VALUES (:id,:datetime,:machineid,:entryid,:ipaddress,:portnumber,:key,:update)');
 define('FIND_API_KEY','SELECT * FROM `api_keys` where `key` = :key');
 define('FIND_ENTRY_RECORDS','SELECT * FROM `records` WHERE (`id` >= :startid AND `id` <= :endid) AND (`machineid` >= :startmachineid AND `machineid` <= :endmachineid) AND `datetime` >= :starttime AND `datetime` <= :endtime AND `revoked` = 0');
+define('FIND_REVOKED_RECORDS','SELECT * FROM `records` WHERE (`id` >= :startid AND `id` <= :endid) AND (`machineid` >= :startmachineid AND `machineid` <= :endmachineid) AND `datetime` >= :starttime AND `datetime` <= :endtime AND `revoked` = 1');
 define('FIND_SERIAL','SELECT * FROM `records` WHERE `serial` = :serial');
 define('ADD_LOG_RECORD','INSERT INTO `log`( `key`, `ip`, `description`, `type`,`time`) VALUES (:key, :ip, :description, :type, :time)');
 define('REVOKE_RECORD','UPDATE `records` SET `revoked` = 1,`update`=:update WHERE `serial` = :serial');
@@ -57,6 +58,7 @@ define('DISAPPROVE','UPDATE `record_approvals` SET `revoked` = \'2\', `update` =
 // Find Parameters
 define('MAXIMUM_PARAMETER',4);
 define('MINIMUM_REQUIRE',1);
+define('FIND_REVOKED_FLAG','revoked'); // JSON key used to request revoked records in find()
 define('ABSOLUTE_MINIMUM',1);
 define('ABSOLUTE_MAXIMUM',9999999999);
 

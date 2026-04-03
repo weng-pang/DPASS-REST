@@ -113,21 +113,31 @@ content=[{"id":123,"dateTime":"2023-10-01 08:30:00","machineId":1,"entryId":2,"i
 
 **Endpoint:** `POST /find?key=YOUR_API_KEY`
 
-**Description:** Queries records based on conditions. At least one query criterion must be provided; otherwise, it throws an `Insufficient Query Content` error. Unprovided conditions are treated as a full range (wildcard).
+**Description:** Queries records based on conditions. At least one query criterion must be provided; otherwise, it throws an `Insufficient Query Content` error. Unprovided conditions are treated as a full range (wildcard). By default, **revoked records are excluded** from results. To specifically retrieve revoked records, include `"revoked": true` in the request payload.
 
 **Request Parameters (`content` payload):**
 *   `id` (Integer, optional): Query a specific user ID
 *   `machineId` (Integer, optional): Query a specific machine ID
-*   `startTime` (String, optional): Start time
-*   `endTime` (String, optional): End time
+*   `startTime` (String, optional): Start time in `YYYY-MM-DD HH:mm:ss` format
+*   `endTime` (String, optional): End time in `YYYY-MM-DD HH:mm:ss` format
+*   `revoked` (Boolean, optional): Set to `true` to retrieve **only** revoked records; omit or set to `false` for normal (non-revoked) records
 
-**Request Example:**
+**Request Example (standard query):**
 ```http
 POST /find?key=dummy-api-key HTTP/1.1
 Host: your-api-domain.com
 Content-Type: application/x-www-form-urlencoded
 
 content={"id":123,"startTime":"2023-10-01 00:00:00","endTime":"2023-10-31 23:59:59"}
+```
+
+**Request Example (query revoked records specifically):**
+```http
+POST /find?key=dummy-api-key HTTP/1.1
+Host: your-api-domain.com
+Content-Type: application/x-www-form-urlencoded
+
+content={"id":123,"revoked":true}
 ```
 
 **Success Response Example:**
@@ -246,11 +256,55 @@ Host: your-api-domain.com
 ]
 ```
 
-### 3.8 Approval Features (Unimplemented)
+### 3.8 Approve a Record
 
-**Endpoints:** `POST /approve?key=YOUR_API_KEY` and `POST /disapprove?key=YOUR_API_KEY`
+**Endpoint:** `POST /approve?key=YOUR_API_KEY`
 
-**Description:** These two routes are declared in `RecordController.php`, but the functions in the controller are empty. Although `approve` and `disapprove` methods are defined within `Model/Record.php`, the controller does not call them correctly. Currently, these endpoints have no actual effect; calling them will not trigger any action or throw an exception.
+**Description:** Approves an attendance record by creating an entry in the `record_approvals` table linked to the given record serial number.
+
+**Request Parameters (`content` payload):**
+*   `serial` (Integer): The serial number of the record to approve
+
+**Request Example:**
+```http
+POST /approve?key=dummy-api-key HTTP/1.1
+Host: your-api-domain.com
+Content-Type: application/x-www-form-urlencoded
+
+content={"serial":105}
+```
+
+**Success Response Example:**
+```json
+{
+    "approvalSerial": 12
+}
+```
+
+### 3.9 Disapprove (Revoke an Approval)
+
+**Endpoint:** `POST /disapprove?key=YOUR_API_KEY`
+
+**Description:** Revokes an existing approval entry by setting its `revoked` flag to `2` (disapproved). The `serial` here refers to the approval serial from the `record_approvals` table, not the record serial.
+
+**Request Parameters (`content` payload):**
+*   `serial` (Integer): The serial number of the approval entry to revoke
+
+**Request Example:**
+```http
+POST /disapprove?key=dummy-api-key HTTP/1.1
+Host: your-api-domain.com
+Content-Type: application/x-www-form-urlencoded
+
+content={"serial":12}
+```
+
+**Success Response Example:**
+```json
+{
+    "serial": 12
+}
+```
 
 ---
 

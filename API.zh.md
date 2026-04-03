@@ -113,21 +113,31 @@ content=[{"id":123,"dateTime":"2023-10-01 08:30:00","machineId":1,"entryId":2,"i
 
 **端點：** `POST /find?key=YOUR_API_KEY`
 
-**描述：** 根據條件查詢紀錄。至少需要提供一個查詢條件，否則會報錯 `Insufficient Query Content`。未提供的條件視為全範圍（Wildcard）。
+**描述：** 根據條件查詢紀錄。至少需要提供一個查詢條件，否則會報錯 `Insufficient Query Content`。未提供的條件視為全範圍（Wildcard）。預設情況下，**已撤銷的紀錄不會出現在結果中**。若需要專門查詢已撤銷的紀錄，請在請求中加入 `"revoked": true`。
 
 **請求參數 (`content` 內容)：**
 *   `id` (Integer, 選填): 查詢特定的使用者 ID
 *   `machineId` (Integer, 選填): 查詢特定的機器 ID
-*   `startTime` (String, 選填): 起始時間
-*   `endTime` (String, 選填): 結束時間
+*   `startTime` (String, 選填): 起始時間，格式為 `YYYY-MM-DD HH:mm:ss`
+*   `endTime` (String, 選填): 結束時間，格式為 `YYYY-MM-DD HH:mm:ss`
+*   `revoked` (Boolean, 選填): 設為 `true` 時，**僅**返回已撤銷的紀錄；省略或設為 `false` 時返回正常（未撤銷）紀錄
 
-**請求範例：**
+**請求範例（標準查詢）：**
 ```http
 POST /find?key=dummy-api-key HTTP/1.1
 Host: your-api-domain.com
 Content-Type: application/x-www-form-urlencoded
 
 content={"id":123,"startTime":"2023-10-01 00:00:00","endTime":"2023-10-31 23:59:59"}
+```
+
+**請求範例（專門查詢已撤銷紀錄）：**
+```http
+POST /find?key=dummy-api-key HTTP/1.1
+Host: your-api-domain.com
+Content-Type: application/x-www-form-urlencoded
+
+content={"id":123,"revoked":true}
 ```
 
 **成功回應範例：**
@@ -246,11 +256,55 @@ Host: your-api-domain.com
 ]
 ```
 
-### 3.8 審批功能 (未實作完成)
+### 3.8 審批紀錄
 
-**端點：** `POST /approve?key=YOUR_API_KEY` 和 `POST /disapprove?key=YOUR_API_KEY`
+**端點：** `POST /approve?key=YOUR_API_KEY`
 
-**描述：** 在 `RecordController.php` 中有宣告這兩個路由，但在控制器中的函數是空的。雖然 `Model/Record.php` 內有 `approve` 和 `disapprove` 方法的定義，但由於控制器未正確呼叫，目前這兩個端點沒有實際作用，調用將不會有任何反應或拋出異常。
+**描述：** 透過在 `record_approvals` 資料表中建立一筆與指定紀錄流水號關聯的審批記錄，對出勤紀錄進行審批。
+
+**請求參數 (`content` 內容)：**
+*   `serial` (Integer): 要審批的紀錄流水號
+
+**請求範例：**
+```http
+POST /approve?key=dummy-api-key HTTP/1.1
+Host: your-api-domain.com
+Content-Type: application/x-www-form-urlencoded
+
+content={"serial":105}
+```
+
+**成功回應範例：**
+```json
+{
+    "approvalSerial": 12
+}
+```
+
+### 3.9 撤銷審批
+
+**端點：** `POST /disapprove?key=YOUR_API_KEY`
+
+**描述：** 透過將 `record_approvals` 資料表中對應審批記錄的 `revoked` 欄位設為 `2`（已撤銷），撤銷一筆現有的審批。此處的 `serial` 為審批流水號，而非紀錄流水號。
+
+**請求參數 (`content` 內容)：**
+*   `serial` (Integer): 要撤銷的審批流水號
+
+**請求範例：**
+```http
+POST /disapprove?key=dummy-api-key HTTP/1.1
+Host: your-api-domain.com
+Content-Type: application/x-www-form-urlencoded
+
+content={"serial":12}
+```
+
+**成功回應範例：**
+```json
+{
+    "serial": 12
+}
+```
 
 ---
 
