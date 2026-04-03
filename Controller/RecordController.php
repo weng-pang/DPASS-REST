@@ -145,10 +145,36 @@ function checkComputerReports(){
 }
 
 
+/**
+ * Approve a record
+ *
+ * Approves an attendance record by creating an approval entry linked to the given record serial.
+ * Request content: {"serial": 105}
+ */
 function approveRecord(){
+	global $app;
+	global $record;
 
+	$request = $app->request();
+	$content = json_decode($request->params('content'), true);
+	$record->getDatabaseConnection()->getConnection()->beginTransaction();
+	echo json_encode($record->approve($content));
+	$record->getDatabaseConnection()->getConnection()->commit();
 }
 
+/**
+ * Disapprove (revoke an approval of) a record
+ *
+ * Revokes an existing approval entry by setting its revoked flag to 2 (disapproved).
+ * Request content: {"serial": 12}
+ */
 function disapproveRecord(){
+	global $app;
+	global $record;
 
+	$request = $app->request();
+	$content = json_decode($request->params('content'), true);
+	$record->getDatabaseConnection()->getConnection()->beginTransaction();
+	echo json_encode($record->disapprove($content));
+	$record->getDatabaseConnection()->getConnection()->commit();
 }

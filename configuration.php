@@ -44,12 +44,13 @@ define('COMPUTER_REGEX','6');
 define('ADD_SINGLE_RECORD','INSERT INTO `records`(`id`, `datetime`, `machineid`, `entryid`, `ipaddress`, `portnumber`, `key`, `update`) VALUES (:id,:datetime,:machineid,:entryid,:ipaddress,:portnumber,:key,:update)');
 define('FIND_API_KEY','SELECT * FROM `api_keys` where `key` = :key');
 define('FIND_ENTRY_RECORDS','SELECT * FROM `records` WHERE (`id` >= :startid AND `id` <= :endid) AND (`machineid` >= :startmachineid AND `machineid` <= :endmachineid) AND `datetime` >= :starttime AND `datetime` <= :endtime AND `revoked` = 0');
+define('FIND_REVOKED_RECORDS','SELECT * FROM `records` WHERE (`id` >= :startid AND `id` <= :endid) AND (`machineid` >= :startmachineid AND `machineid` <= :endmachineid) AND `datetime` >= :starttime AND `datetime` <= :endtime AND `revoked` = 1');
 define('FIND_SERIAL','SELECT * FROM `records` WHERE `serial` = :serial');
 define('ADD_LOG_RECORD','INSERT INTO `log`( `key`, `ip`, `description`, `type`,`time`) VALUES (:key, :ip, :description, :type, :time)');
 define('REVOKE_RECORD','UPDATE `records` SET `revoked` = 1,`update`=:update WHERE `serial` = :serial');
 define('CHECK_UPDATES','SELECT `machineid`,MAX(`update`) AS "update" FROM `records` WHERE `revoked` = 0 GROUP BY `machineid`');
 define('OBTAIN_SETTING','SELECT * FROM `configurations`');
-define('CHECK_LATEST_RECORD','SELECT `id`,MAX(`update`) AS "update", `machineid` FROM `records` WHERE `revoked` = 0 AND `id` <=' . MAXIMUM_STAFF_ID . ' GROUP BY `id`');
+define('CHECK_LATEST_RECORD','SELECT `id`, MAX(`update`) AS "update", `machineid` FROM `records` WHERE `revoked` = 0 AND `id` <=' . MAXIMUM_STAFF_ID . ' GROUP BY `id`, `machineid`');
 define('APPROVE','INSERT INTO `record_approvals` (`serial`, `record_serial`, `id`, `power`, `datetime`, `revoked`, `update`) VALUES (NULL,:serial, \'1\', \'100\', CURRENT_TIMESTAMP, \'0\', CURRENT_TIMESTAMP)');
 define('DISAPPROVE','UPDATE `record_approvals` SET `revoked` = \'2\', `update` = CURRENT_TIMESTAMP WHERE `record_approvals`.`serial` = :serial');
 //TODO check if regex comparison possible
@@ -57,6 +58,7 @@ define('DISAPPROVE','UPDATE `record_approvals` SET `revoked` = \'2\', `update` =
 // Find Parameters
 define('MAXIMUM_PARAMETER',4);
 define('MINIMUM_REQUIRE',1);
+define('FIND_REVOKED_FLAG','revoked'); // JSON key used to request revoked records in find()
 define('ABSOLUTE_MINIMUM',1);
 define('ABSOLUTE_MAXIMUM',9999999999);
 

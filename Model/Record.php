@@ -81,7 +81,9 @@ class Record extends Model{
 	}
 	/**
 	 * Find 
-	 * This function finds records under a range of criterion using json message
+	 * This function finds records under a range of criterion using json message.
+	 * By default, revoked records are excluded from results unless specifically requested.
+	 *
 	 * json message may consist of the following objectives :
 	 * for a specific id { "id": 123 }
 	 * for a specific machine { "machineId": 456 }
@@ -96,6 +98,12 @@ class Record extends Model{
    *   "endTime": "2023-07-05 23:59:59"
    * }
    *
+	 * To specifically request revoked records, include "revoked": true in the JSON:
+	 * {
+   *   "id": 123,
+   *   "revoked": true
+   * }
+   *
 	 * @param json $content
 	 * @throws IllegalContentException
 	 * @return json:
@@ -103,11 +111,16 @@ class Record extends Model{
 	function find($content){
 		$parameterCount = MAXIMUM_PARAMETER;
 		$this->type = 'FIND_RECORD';
-//		try{
-			$statement = $this->statement->prepare(FIND_ENTRY_RECORDS);
+		try{
 			if (is_null($content))
 				throw new IllegalContentException('Please Check Input Parameters ');
-			// // check id
+
+			// Determine whether to query revoked records specifically
+			$findRevoked = isset($content[FIND_REVOKED_FLAG]) && $content[FIND_REVOKED_FLAG] === true;
+			$sqlQuery = $findRevoked ? FIND_REVOKED_RECORDS : FIND_ENTRY_RECORDS;
+			$statement = $this->statement->prepare($sqlQuery);
+
+			// check id
 			if (isset($content['id']) && is_integer($content['id'])){
 				$statement->bindParam('startid',$content['id']);
 				$statement->bindParam('endid',$content['id']);
@@ -155,6 +168,7 @@ class Record extends Model{
 			$this->description .= ',END:';
 			$this->description .= ($content['endTime'] <= ABSOLUTE_MAXIMUM) ? date(FULL_DATE_FORMAT_SEARCH, (strtotime($content['endTime']))): '-';
 			$this->description .= ',PARAMETER:'.$parameterCount;
+			$this->description .= ',REVOKED:'.($findRevoked ? 'YES' : 'NO');
 			parent::save();
 			if ($parameterCount < MINIMUM_REQUIRE){
 				throw new IllegalContentException('Insufficient Query Content');
@@ -162,12 +176,12 @@ class Record extends Model{
 			$statement->execute();
 			return $statement->fetchAll(PDO::FETCH_ASSOC);
 		
-//		} catch (Exception $e){
-//			$this->database->getConnection()->rollBack();
-//			$this->description .= ','.$e->getMessage();
-//			parent::save();
-//			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"find records","text":"'.$e->getMessage().'"}}');
-//		}
+		} catch (Exception $e){
+			$this->database->getConnection()->rollBack();
+			$this->description .= ','.$e->getMessage();
+			parent::save();
+			$this->app->halt(BAD_REQUEST,'{"error":{"procedure":"find records","text":"'.$e->getMessage().'"}}');
+		}
 	}
 	
 	/**
@@ -224,17 +238,23 @@ class Record extends Model{
 	
 	/**
 	 * revoke
-	 * Attndance record may be revoked, under the authority given by a manager
-	 * The record itself is to be marked as revoked, but a log record will cover enerything concerning the revoke of record in concern
+	 * Attendance record may be revoked, under the authority given by a manager.
+	 * The record itself is marked as revoked (soft-delete), but a log record will cover everything
+	 * concerning the revoke of the record in concern.
+	 * Revoked records will NOT appear in standard find() queries unless specifically requested
+	 * via the "revoked": true flag.
 	 * 
 	 * @param array $content['serial'] Example: {"serial": "123456789"}
-	 * @return null
+	 * @return array Returns the content array containing the serial on success
+	 * @throws IllegalContentException
 	 */
 	function revoke($content){
 		$this->type = 'REVOKE';
 		$this->description =  'TRANSACTIONID:'.$content['serial'];
 		try{
 			if (is_null($content)) // the content must be provided
+				throw new IllegalContentException('Please Provide the Transaction ID Number ');
+			if (!isset($content['serial']))
 				throw new IllegalContentException('Please Provide the Transaction ID Number ');
 			$statement = $this->statement->prepare(REVOKE_RECORD);
 			$statement->bindParam('serial',$content['serial']);
@@ -255,55 +275,69 @@ class Record extends Model{
 
     /**
      * approve
-     * Approve attendance record entry by staff
+     * Approve attendance record entry by staff.
+     * Creates an approval entry in the record_approvals table linked to the given record serial.
      *
-     * @param $content
+     * @param array $content['serial'] Example: {"serial": 105}
+     * @return array Returns the content array containing the approval serial on success
+     * @throws IllegalContentException
      */
     function approve($content){
+        // Set type immediately so parent::save() in catch block can log correctly
+        $this->type = 'APPROVE_RECORD';
+        $this->description = 'APPROVE_RECORD:PENDING';
         try{
             if (is_null($content))
                 throw new IllegalContentException('Please Check Input Parameters ');
+            if (!isset($content['serial']))
+                throw new IllegalContentException('Please Provide the Record Serial Number ');
             // arrange database log
-            $this->type = 'APPROVE_RECORD';
-            $this->description =  'ID:'.$content['id'].',MACHINE:'.$content['machineId'].',TIME:'.date('Y-m-d H:i', strtotime($content['dateTime'])).',TYPE:'.$content['entryId'].',MACHINEIP:'.$content['ipAddress'];
-            $statement = $this->statement->prepare(ADD_SINGLE_RECORD);
-            if (!is_integer($content['id']) || $content['id'] > MAXIMUM_ID)
-                throw new IllegalContentException('Incorrect ID:'.$content['id']);
-            if (!is_integer($content['machineId']) || $content['machineId'] > MAXIMUM_MACHINE_ID)
-                throw new IllegalContentException('Incorrect Machine ID:'.$content['machineId']);
-            if (!is_integer($content['entryId']) || $content['entryId'] > MAXIMUM_ENTRY_ID)
-                throw new IllegalContentException('Incorrect Entry ID:'.$content['entryId']);
-            if (!strtotime($content['dateTime']))
-                throw new IllegalContentException('Incorrect Date:'.$content['dateTime']);
-            if (!preg_match(IP_REGEX, $content['ipAddress']))
-                throw new IllegalContentException('Incorrect IP Address:'.$content['ipAddress']);
-            $statement->bindParam('id',$content['id']);
-            $statement->bindParam('datetime',$content['dateTime']);
-            $statement->bindParam('machineid',$content['machineId']);
-            $statement->bindParam('entryid',$content['entryId']);
-            $statement->bindParam('ipaddress',$content['ipAddress']);
-            $statement->bindParam('portnumber',$content['portNumber']);
-            $statement->bindParam('update', date(FULL_DATE_FORMAT));
-            $statement->bindParam('key', $this->app->request()->params('key'));
-
+            $this->description = 'RECORD_SERIAL:'.$content['serial'];
+            $statement = $this->statement->prepare(APPROVE);
+            $statement->bindParam('serial', $content['serial']);
             parent::save();
             $statement->execute();
-            return array('transactionId' => intval($this->database->getConnection()->lastInsertId()));
-
+            return array('approvalSerial' => intval($this->database->getConnection()->lastInsertId()));
         } catch (Exception $e){
             $this->database->getConnection()->rollBack();
             $this->description .= ','.$e->getMessage();
             parent::save();
-            $this->app->halt(BAD_REQUEST,'{"error":{"procedure":"add record","text":"'.$e->getMessage().'"}}');
+            $this->app->halt(BAD_REQUEST,'{"error":{"procedure":"approve record","text":"'.$e->getMessage().'"}}');
         }
     }
 
     /**
      * disapprove
-     * Revoke attendance record entry by staff
-     * @param $content
+     * Revoke an existing approval entry by staff.
+     * Sets the revoked flag on the record_approvals row to 2 (disapproved).
+     *
+     * @param array $content['serial'] Example: {"serial": 12}
+     * @return array Returns the content array containing the approval serial on success
+     * @throws IllegalContentException
      */
     function disapprove($content){
-
+        // Set type immediately so parent::save() in catch block can log correctly
+        $this->type = 'DISAPPROVE_RECORD';
+        $this->description = 'DISAPPROVE_RECORD:PENDING';
+        try{
+            if (is_null($content))
+                throw new IllegalContentException('Please Check Input Parameters ');
+            if (!isset($content['serial']))
+                throw new IllegalContentException('Please Provide the Approval Serial Number ');
+            // arrange database log
+            $this->description = 'APPROVAL_SERIAL:'.$content['serial'];
+            $statement = $this->statement->prepare(DISAPPROVE);
+            $statement->bindParam('serial', $content['serial']);
+            parent::save();
+            $statement->execute();
+            if ($statement->rowCount())
+                return $content;
+            throw new IllegalContentException('Please Provide a correct Approval Serial Number ');
+        } catch (Exception $e){
+            $this->database->getConnection()->rollBack();
+            $this->description .= ','.$e->getMessage();
+            parent::save();
+            $this->app->halt(BAD_REQUEST,'{"error":{"procedure":"disapprove record","text":"'.$e->getMessage().'"}}');
+        }
     }
 }
