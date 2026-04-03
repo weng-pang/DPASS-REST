@@ -144,6 +144,30 @@ content={"id":123,"startTime":"2023-10-01 00:00:00","endTime":"2023-10-31 23:59:
         "update": "2023-10-01 08:30:01",
         "key": "dummy-api-key",
         "revoked": 0
+    },
+    {
+        "serial": 106,
+        "id": 123,
+        "datetime": "2023-10-02 09:05:00",
+        "machineid": 1,
+        "entryid": 3,
+        "ipaddress": "192.168.1.100",
+        "portnumber": 8080,
+        "update": "2023-10-02 09:05:02",
+        "key": "dummy-api-key",
+        "revoked": 0
+    },
+    {
+        "serial": 112,
+        "id": 123,
+        "datetime": "2023-10-15 17:45:00",
+        "machineid": 2,
+        "entryid": 1,
+        "ipaddress": "192.168.1.101",
+        "portnumber": 8080,
+        "update": "2023-10-15 17:45:03",
+        "key": "dummy-api-key",
+        "revoked": 0
     }
 ]
 ```
