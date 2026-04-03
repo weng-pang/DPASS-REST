@@ -2,6 +2,16 @@
 
 DPASS-REST is a RESTful API implementation built on the Slim Framework.
 
+## API Documentation
+
+A full reference of all available RESTful endpoints, including request/response examples, validation rules, and error codes, is available in **[API.md](API.md)**.
+
+The documentation covers:
+- Authentication via API Key
+- All available endpoints (`/add`, `/addbatch`, `/find`, `/revoke`, `/check`, `/check_profile`, `/approve`, `/disapprove`)
+- Request parameters and field constraints
+- Success and error response formats
+
 ## Getting Started
 
 ### Database Setup
