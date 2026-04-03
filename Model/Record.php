@@ -283,13 +283,15 @@ class Record extends Model{
      * @throws IllegalContentException
      */
     function approve($content){
+        // Set type immediately so parent::save() in catch block can log correctly
+        $this->type = 'APPROVE_RECORD';
+        $this->description = 'APPROVE_RECORD:PENDING';
         try{
             if (is_null($content))
                 throw new IllegalContentException('Please Check Input Parameters ');
             if (!isset($content['serial']))
                 throw new IllegalContentException('Please Provide the Record Serial Number ');
             // arrange database log
-            $this->type = 'APPROVE_RECORD';
             $this->description = 'RECORD_SERIAL:'.$content['serial'];
             $statement = $this->statement->prepare(APPROVE);
             $statement->bindParam('serial', $content['serial']);
@@ -314,13 +316,15 @@ class Record extends Model{
      * @throws IllegalContentException
      */
     function disapprove($content){
+        // Set type immediately so parent::save() in catch block can log correctly
+        $this->type = 'DISAPPROVE_RECORD';
+        $this->description = 'DISAPPROVE_RECORD:PENDING';
         try{
             if (is_null($content))
                 throw new IllegalContentException('Please Check Input Parameters ');
             if (!isset($content['serial']))
                 throw new IllegalContentException('Please Provide the Approval Serial Number ');
             // arrange database log
-            $this->type = 'DISAPPROVE_RECORD';
             $this->description = 'APPROVAL_SERIAL:'.$content['serial'];
             $statement = $this->statement->prepare(DISAPPROVE);
             $statement->bindParam('serial', $content['serial']);

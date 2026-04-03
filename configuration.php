@@ -50,7 +50,7 @@ define('ADD_LOG_RECORD','INSERT INTO `log`( `key`, `ip`, `description`, `type`,`
 define('REVOKE_RECORD','UPDATE `records` SET `revoked` = 1,`update`=:update WHERE `serial` = :serial');
 define('CHECK_UPDATES','SELECT `machineid`,MAX(`update`) AS "update" FROM `records` WHERE `revoked` = 0 GROUP BY `machineid`');
 define('OBTAIN_SETTING','SELECT * FROM `configurations`');
-define('CHECK_LATEST_RECORD','SELECT `id`,MAX(`update`) AS "update", `machineid` FROM `records` WHERE `revoked` = 0 AND `id` <=' . MAXIMUM_STAFF_ID . ' GROUP BY `id`');
+define('CHECK_LATEST_RECORD','SELECT `id`, MAX(`update`) AS "update", `machineid` FROM `records` WHERE `revoked` = 0 AND `id` <=' . MAXIMUM_STAFF_ID . ' GROUP BY `id`, `machineid`');
 define('APPROVE','INSERT INTO `record_approvals` (`serial`, `record_serial`, `id`, `power`, `datetime`, `revoked`, `update`) VALUES (NULL,:serial, \'1\', \'100\', CURRENT_TIMESTAMP, \'0\', CURRENT_TIMESTAMP)');
 define('DISAPPROVE','UPDATE `record_approvals` SET `revoked` = \'2\', `update` = CURRENT_TIMESTAMP WHERE `record_approvals`.`serial` = :serial');
 //TODO check if regex comparison possible
